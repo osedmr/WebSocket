@@ -4,6 +4,7 @@ import android.util.Log
 import com.galerkinrobotics.test.data.model.AuthParam
 import com.galerkinrobotics.test.data.model.AuthenticateRequest
 import com.galerkinrobotics.test.data.model.AuthenticateResponse
+import com.galerkinrobotics.test.util.Constants
 import com.google.gson.Gson
 
 import javax.inject.Inject
@@ -32,13 +33,13 @@ class WebSocketManager @Inject constructor() {
     fun connect(onMessageReceived: (AuthenticateResponse) -> Unit) {
         val request = Request.Builder()
             // .url("wss://echo.websocket.org")  // Test için public WebSocket server (WSS)
-            .url("ws://85.105.107.53:9095")  // Orijinal sunucu
+            .url(Constants.BASE_URL)  // Orijinal sunucu
             .build()
 
         this.listener = onMessageReceived
         isConnected = false
 
-        Log.d("WebSocket", "Bağlantı kuruluyor: ws://85.105.107.53:9095")
+        Log.d("WebSocket", "Bağlantı kuruluyor: URL...")
 
         webSocket = client.newWebSocket(request, object : WebSocketListener() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
