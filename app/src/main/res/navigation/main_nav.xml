@@ -9,5 +9,23 @@
         android:id="@+id/loginFragment"
         android:name="com.galerkinrobotics.test.ui.fragments.LoginFragment"
         android:label="fragment_login"
-        tools:layout="@layout/fragment_login" />
+        tools:layout="@layout/fragment_login" >
+        <action
+            android:id="@+id/action_loginFragment_to_inohomFragment"
+            app:destination="@id/inohomFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/inohomFragment"
+        android:name="com.galerkinrobotics.test.ui.fragments.InohomFragment"
+        android:label="fragment_inohom"
+        tools:layout="@layout/fragment_inohom" >
+        <action
+            android:id="@+id/action_inohomFragment_to_aydınlatmaFragment"
+            app:destination="@id/aydınlatmaFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/aydınlatmaFragment"
+        android:name="com.galerkinrobotics.test.ui.fragments.AydınlatmaFragment"
+        android:label="fragment_aydınlatma"
+        tools:layout="@layout/fragment_aydınlatma" />
 </navigation>

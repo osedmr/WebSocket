@@ -8,10 +8,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.galerkinrobotics.test.R
 import com.galerkinrobotics.test.databinding.FragmentLoginBinding
 import com.galerkinrobotics.test.ui.viewmodels.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class LoginFragment : Fragment() {
@@ -34,6 +38,11 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         binding.button.setOnClickListener {
             viewModel.authenticate()
+            Toast.makeText(requireContext(), "Giriş Yapılıyor...", Toast.LENGTH_SHORT).show()
+            lifecycleScope.launch {
+                delay(2000)
+                findNavController().navigate(R.id.action_loginFragment_to_inohomFragment)
+            }
         }
 
         viewModel.authResult.observe(viewLifecycleOwner) { response ->

@@ -4,6 +4,11 @@ import android.util.Log
 import com.galerkinrobotics.test.data.model.AuthParam
 import com.galerkinrobotics.test.data.model.AuthenticateRequest
 import com.galerkinrobotics.test.data.model.AuthenticateResponse
+import com.galerkinrobotics.test.data.model.GetControlListRequest
+import com.galerkinrobotics.test.data.model.GetControlListResponse
+import com.galerkinrobotics.test.data.model.UpdateControlValueRequest
+import com.galerkinrobotics.test.data.model.UpdateControlParam
+import com.galerkinrobotics.test.data.model.OnEntityUpdatedResponse
 import com.galerkinrobotics.test.util.Constants
 import com.google.gson.Gson
 
@@ -26,17 +31,19 @@ class WebSocketManager @Inject constructor() {
         .build()
     private val gson = Gson()
 
-    private var listener: ((AuthenticateResponse) -> Unit)? = null
+    private var authListener: ((AuthenticateResponse) -> Unit)? = null
+    private var controlListListener: ((GetControlListResponse) -> Unit)? = null
+    private var entityUpdatedListener: ((OnEntityUpdatedResponse) -> Unit)? = null
     private var isConnected = false
     private var pendingMessage: String? = null
 
-    fun connect(onMessageReceived: (AuthenticateResponse) -> Unit) {
+    fun connect(onAuthReceived: (AuthenticateResponse) -> Unit) {
         val request = Request.Builder()
             // .url("wss://echo.websocket.org")  // Test için public WebSocket server (WSS)
             .url(Constants.BASE_URL)  // Orijinal sunucu
             .build()
 
-        this.listener = onMessageReceived
+        this.authListener = onAuthReceived
         isConnected = false
 
         Log.d("WebSocket", "Bağlantı kuruluyor: URL...")
@@ -64,9 +71,30 @@ class WebSocketManager @Inject constructor() {
                 }
                 
                 try {
-                    val response = gson.fromJson(text, AuthenticateResponse::class.java)
-                    Log.d("WebSocket", "JSON parse başarılı: $response")
-                    listener?.invoke(response)
+                    // Önce mesaj türünü anlamak için genel parsing yap
+                    val jsonObject = gson.fromJson(text, com.google.gson.JsonObject::class.java)
+                    val method = jsonObject.get("method")?.asString
+                    
+                    when (method) {
+                        "Authenticate" -> {
+                            val response = gson.fromJson(text, AuthenticateResponse::class.java)
+                            Log.d("WebSocket", "Auth response parse başarülı: $response")
+                            authListener?.invoke(response)
+                        }
+                        "GetControlList" -> {
+                            val response = gson.fromJson(text, GetControlListResponse::class.java)
+                            Log.d("WebSocket", "ControlList response parse başarılı: $response")
+                            controlListListener?.invoke(response)
+                        }
+                        "OnEntityUpdated" -> {
+                            val response = gson.fromJson(text, OnEntityUpdatedResponse::class.java)
+                            Log.d("WebSocket", "EntityUpdated response parse başarılı: $response")
+                            entityUpdatedListener?.invoke(response)
+                        }
+                        else -> {
+                            Log.d("WebSocket", "Bilinmeyen method: $method")
+                        }
+                    }
                 } catch (e: Exception) {
                     Log.e("WebSocket", "JSON parse error: ${e.message}")
                     Log.e("WebSocket", "Problematik JSON: $text")
@@ -96,13 +124,59 @@ class WebSocketManager @Inject constructor() {
     fun sendAuthenticateRequest(username: String, password: String) {
         val request = AuthenticateRequest(true,8,params = listOf(AuthParam(username, password)),"Authenticate")
         val json: String = gson.toJson(request)
-        Log.d("WebSocket", "Gönderilen JSON: $json")
+        Log.d("WebSocket", "Gönderilen Auth JSON: $json")
         
         if (isConnected) {
-            Log.d("WebSocket", "Bağlantı aktif, mesaj gönderiliyor")
+            Log.d("WebSocket", "Bağlantı aktif, Auth mesajı gönderiliyor")
             webSocket?.send(json)
         } else {
-            Log.d("WebSocket", "Bağlantı henüz kurulmadı, mesaj bekletiliyor")
+            Log.d("WebSocket", "Bağlantı henüz kurulmadı, Auth mesajı bekletiliyor")
+            pendingMessage = json
+        }
+    }
+    
+    fun setControlListListener(listener: (GetControlListResponse) -> Unit) {
+        this.controlListListener = listener
+    }
+    
+    fun setEntityUpdatedListener(listener: (OnEntityUpdatedResponse) -> Unit) {
+        this.entityUpdatedListener = listener
+    }
+    
+    fun sendGetControlListRequest() {
+        val request = GetControlListRequest(
+            isRequest = true,
+            id = 5,
+            params = listOf(emptyMap()),
+            method = "GetControlList"
+        )
+        val json: String = gson.toJson(request)
+        Log.d("WebSocket", "Gönderilen GetControlList JSON: $json")
+        
+        if (isConnected) {
+            Log.d("WebSocket", "Bağlantı aktif, GetControlList mesajı gönderiliyor")
+            webSocket?.send(json)
+        } else {
+            Log.d("WebSocket", "Bağlantı henüz kurulmadı, GetControlList mesajı bekletiliyor")
+            pendingMessage = json
+        }
+    }
+    
+    fun sendUpdateControlValueRequest(controlId: String, value: Int) {
+        val request = UpdateControlValueRequest(
+            isRequest = true,
+            id = 84,
+            params = listOf(UpdateControlParam(controlId, value)),
+            method = "UpdateControlValue"
+        )
+        val json: String = gson.toJson(request)
+        Log.d("WebSocket", "Gönderilen UpdateControlValue JSON: $json")
+        
+        if (isConnected) {
+            Log.d("WebSocket", "Bağlantı aktif, UpdateControlValue mesajı gönderiliyor")
+            webSocket?.send(json)
+        } else {
+            Log.d("WebSocket", "Bağlantı henüz kurulmadı, UpdateControlValue mesajı bekletiliyor")
             pendingMessage = json
         }
     }
