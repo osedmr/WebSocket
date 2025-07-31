@@ -21,15 +21,12 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
 @Singleton
-class WebSocketManager @Inject constructor() {
+class WebSocketManager @Inject constructor(
+    private val client: OkHttpClient,
+    private val gson: Gson
+) {
 
     private var webSocket: WebSocket? = null
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
-        .readTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
-        .writeTimeout(10, java.util.concurrent.TimeUnit.SECONDS)
-        .build()
-    private val gson = Gson()
 
     private var authListener: ((AuthenticateResponse) -> Unit)? = null
     private var controlListListener: ((GetControlListResponse) -> Unit)? = null
@@ -180,4 +177,16 @@ class WebSocketManager @Inject constructor() {
             pendingMessage = json
         }
     }
+    
+    fun disconnect() {
+        webSocket?.close(1000, "Client disconnect")
+        webSocket = null
+        isConnected = false
+        pendingMessage = null
+        authListener = null
+        controlListListener = null
+        entityUpdatedListener = null
+    }
+    
+    fun isConnected(): Boolean = isConnected
 }

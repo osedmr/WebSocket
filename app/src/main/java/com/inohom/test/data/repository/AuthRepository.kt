@@ -5,8 +5,11 @@ import com.inohom.test.data.model.GetControlListResponse
 import com.inohom.test.data.model.OnEntityUpdatedResponse
 import com.inohom.test.websocket.WebSocketManager
 import javax.inject.Inject
+import javax.inject.Singleton
 
-class AuthRepository @Inject constructor(private val wsManager: WebSocketManager
+@Singleton
+class AuthRepository @Inject constructor(
+    private val wsManager: WebSocketManager
 ) {
     fun connectAndAuthenticate(username: String, password: String, onResult: (AuthenticateResponse) -> Unit
     ) {
