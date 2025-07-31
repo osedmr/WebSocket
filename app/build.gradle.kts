@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.galerkinrobotics.test"
+    namespace = "com.inohom.test"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.galerkinrobotics.test"
+        applicationId = "com.inohom.test"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

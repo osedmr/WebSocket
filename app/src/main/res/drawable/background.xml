@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
     <item>
         <shape android:shape="rectangle">
+            <corners android:radius="12dp" />
             <gradient
                 android:angle="45"
+                android:type="linear"
                 android:startColor="#C88445"
-
                 android:centerColor="#26284E"
-                android:endColor="#186F73"
-                android:type="linear" />
+                android:endColor="#186F73" />
+        </shape>
+    </item>
+
+    <!-- Hafif bir iç gölge efekti için ek katman -->
+    <item android:left="2dp" android:right="2dp" android:top="2dp" android:bottom="2dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="12dp" />
+            <solid android:color="#40141414" /> <!-- yarı şeffaf siyah iç gölge -->
         </shape>
     </item>
 
